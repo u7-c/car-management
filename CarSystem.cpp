@@ -1,43 +1,88 @@
 #include "CarSystem.h"
 #include <fstream>
-#include <sstream>
-#include <stdexcept>
+using namespace std;
 
 int CarSystem::nextId = 1;
 
 CarSystem::CarSystem() {
+    count = 0;
     load();
 }
 
 CarSystem::~CarSystem() {
-    for (auto v : list) delete v;
+    for (int i = 0; i < count; i++) {
+        delete list[i];
+    }
 }
 
-void CarSystem::load() {
-    std::ifstream in("vehicles.txt");
-    std::string line;
-    while (std::getline(in, line)) {
-        std::stringstream s(line);
-        int id;
-        std::string brand, model;
-        double price;
-        char c;
-        s >> id >> c >> brand >> c >> model >> c >> price;
-        list.push_back(new Car(id, brand, model, price));
-        if (id >= nextId) nextId = id + 1;
+void CarSystem::addCar(const string& brand, const string& model, double price) {
+    if (count >= 100) throw LimitReachedException();
+    string id = "C" + to_string(nextId++);
+    list[count++] = new Car(id, brand, model, price, false);
+    save();
+}
+
+void CarSystem::showAll() const {
+    for (int i = 0; i < count; i++) {
+        list[i]->display();
     }
 }
 
 void CarSystem::save() const {
-    std::ofstream out("vehicles.txt", std::ios::trunc);
-    for (auto v : list) out << v->serialize() << "\n";
+    ofstream fout("vehicles.txt");
+    for (int i = 0; i < count; i++) {
+        list[i]->serialize(fout);
+    }
 }
 
-void CarSystem::addCar(const std::string& brand, const std::string& model, double price) {
-    list.push_back(new Car(nextId++, brand, model, price));
-    save();
+void CarSystem::load() {
+    ifstream fin("vehicles.txt");
+    if (!fin) return;
+
+    string id, brand, model;
+    double price;
+    int rentedValue;
+
+    while (fin >> id >> brand >> model >> price >> rentedValue) {
+        list[count++] = new Car(id, brand, model, price, rentedValue == 1);
+        int num = stoi(id.substr(1));
+        if (num >= nextId) nextId = num + 1;
+    }
 }
 
-void CarSystem::show() const {
-    for (auto v : list) v->display();
+void CarSystem::rentCar(int id) {
+    string key = "C" + to_string(id);
+    for (int i = 0; i < count; i++) {
+        if (list[i]->getId() == key) {
+            Car* c = dynamic_cast<Car*>(list[i]);
+            if (c->isRented()) throw CarAlreadyRentedException();
+            c->setRented(true);
+
+            ofstream fout("rental.txt", ios::app);
+            fout << key << " | Rented\n";
+
+            save();
+            return;
+        }
+    }
+    throw CarNotFoundException();
 }
+
+void CarSystem::returnCar(int id) {
+    string key = "C" + to_string(id);
+    for (int i = 0; i < count; i++) {
+        if (list[i]->getId() == key) {
+            Car* c = dynamic_cast<Car*>(list[i]);
+            if (!c->isRented()) throw CarNotRentedException();
+            c->setRented(false);
+
+            ofstream fout("rental.txt", ios::app);
+            fout << key << " | Returned\n";
+
+            save();
+            return;
+        }
+    }
+    throw CarNotFoundException();
+}
+
