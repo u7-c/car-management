@@ -2,7 +2,6 @@
 #include "Vehicle.h"
 #include "Car.h"
 #include "Exceptions.h"
-#include <string>
 
 class CarSystem {
 private:
@@ -14,12 +13,14 @@ public:
     CarSystem();
     ~CarSystem();
 
-    void addCar(const std::string& brand, const std::string& model, double price);
+    void addCar(const std::string&, const std::string&, double);
     void showAll() const;
+    void showTypes() const;
 
     void save() const;
     void load();
 
-    void rentCar(int id);
-    void returnCar(int id);
+    void rentCar(int);
+    void returnCar(int);
 };
+

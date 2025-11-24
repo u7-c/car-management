@@ -10,7 +10,8 @@ protected:
 
 public:
     Vehicle(int, const std::string&, const std::string&, double);
-    virtual ~Vehicle();
+    virtual ~Vehicle() {}
+
     virtual void display() const = 0;
     virtual std::string serialize() const = 0;
 

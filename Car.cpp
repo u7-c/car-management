@@ -3,16 +3,16 @@
 #include <sstream>
 
 Car::Car(int i, const std::string& b, const std::string& m, double p, bool r)
-: Vehicle(i, b, m, p), rented(r) {}
+    : Vehicle(i, b, m, p), rented(r) {}
 
 void Car::display() const {
-    std::cout << id << " " << brand << " " << model << " " << price 
-              << " " << (rented ? "Rented" : "Available") << "\n";
+    std::cout << id << " " << brand << " " << model << " " << price
+        << " - " << (rented ? "Rented" : "Available") << "\n";
 }
 
 std::string Car::serialize() const {
     std::ostringstream out;
-    out << id << "," << brand << "," << model << "," << price << "," << (rented ? 1 : 0);
+    out << id << " " << brand << " " << model << " " << price << " " << rented;
     return out.str();
 }
 
